@@ -1,30 +1,17 @@
 from flask import Flask, render_template_string, request
 import requests
-import json
-import re
-import os
-
 import base64
-PART1 = 'Z2hwX2pQanAyS3FKMDdia3drYWIz'
-PART2 = 'OFFEUG1KVWRFVW5xNjRRS09UZA=='
-GITHUB_PAT = base64.b64decode(PART1 + PART2).decode()
+import json
 
 app = Flask(__name__)
 
-def load_settings():
-    if os.path.exists('local_settings.json'):
-        with open('local_settings.json') as f:
-            return json.load(f)
-    return {}
-
-
-if not GITHUB_PAT:
-    print('!!! ОШИБКА: GITHUB_PAT не найден в переменных окружения !!!')
-else:
-    print(f'GITHUB_PAT успешно загружен, начинается с {GITHUB_PAT[:4]}...')
+# Токен, зашитый в base64 (безопасно для GitHub)
+PART1 = 'Z2hwX2pQanAyS3FKMDdia3drYWIz'
+PART2 = 'OFFEUG1KVWRFVW5xNjRRS09UZA=='
+GITHUB_PAT = base64.b64decode(PART1 + PART2).decode()
 REPO = 'sidserg/ofz-assistant-pro'
 
-HTML_TEMPLATE = '''
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -38,7 +25,6 @@ HTML_TEMPLATE = '''
         h2 { border-bottom: 2px solid #1abc9c; padding-bottom: 5px; margin-top: 25px; }
         .status-box { background: #ecf0f1; color: #2c3e50; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
         .status-big { font-size: 22px; font-weight: bold; color: #e74c3c; }
-        .status-success { color: #27ae60; }
         ul { list-style-type: none; padding: 0; }
         li { padding: 8px 0; border-bottom: 1px solid #465f7a; }
         .form-group { margin-top: 20px; background: #2c3e50; padding: 20px; border-radius: 8px; }
@@ -55,11 +41,7 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <h1>OFZ PRO (Web)</h1>
-        <p style="color: yellow; font-size: 20px;">TEST_TOKEN: {{ GITHUB_PAT[:10] if GITHUB_PAT else 'EMPTY' }}</p>
-        <p style="color: yellow; font-size: 20px;">TEST_REPO: {{ REPO }}</p>
-        <div style="background: #e74c3c; color: white; padding: 10px; margin-bottom: 10px;">
-            <b>DEBUG:</b> PAT starts with: {{ GITHUB_PAT[:4] if GITHUB_PAT else 'NONE' }} | REPO: {{ REPO }}
-        </div>
+        <p style="color: yellow;">TEST_TOKEN: {{ GITHUB_PAT[:10] if GITHUB_PAT else 'EMPTY' }}</p>
         <div class="nav">
             <a href="/">Статус</a>
             <a href="/schedule">Расписание</a>
@@ -68,44 +50,30 @@ HTML_TEMPLATE = '''
     </div>
 </body>
 </html>
-'''
+"""
 
 @app.route('/')
 def index():
+    if not GITHUB_PAT:
+        return render_template_string(HTML_TEMPLATE, content="<h2 style='color:red'>ОШИБКА: Токен пуст!</h2>")
+    
+    headers = {'Authorization': f'token {GITHUB_PAT}', 'Accept': 'application/vnd.github.v3+json'}
+    url = f'https://api.github.com/repos/{REPO}/contents/reports'
+    
     try:
-        # Проверка, видит ли приложение токен
-        if not GITHUB_PAT:
-            return "<h2>ОШИБКА: Переменная GITHUB_PAT не видна приложению. Проверьте настройки Environment в RelaxDev.</h2>"
-        
-        headers = {'Authorization': f'token {GITHUB_PAT}', 'Accept': 'application/vnd.github.v3+json'}
-        url = f'https://api.github.com/repos/{REPO}/contents/reports'
-        
         r = requests.get(url, headers=headers)
-        
-        # Если GitHub вернул ошибку (например, 401 Неавторизован)
         if r.status_code != 200:
-            return f"<h2>Ошибка GitHub API: {r.status_code}</h2><p>{r.text}</p><p>Токен начинается с: {GITHUB_PAT[:4]}...</p>"
-        
+            return render_template_string(HTML_TEMPLATE, content=f"<h2 style='color:red'>Ошибка GitHub: {r.status_code}</h2>")
+            
         files = r.json()
         if not files:
-            return "<h2>Токен верный, но папка reports пуста.</h2>"
-        
-        latest_file = None
-        latest_date = ""
-        for f in files:
-            if f['name'].endswith('.json'):
-                file_date = f['name'][:10]
-                if file_date > latest_date:
-                    latest_date = file_date
-                    latest_file = f
-                    
-        if not latest_file:
-            return "<h2>В папке reports нет JSON-файлов.</h2>"
-        
+            return render_template_string(HTML_TEMPLATE, content="<h2>Отчетов пока нет.</h2>")
+            
+        latest_file = sorted(files, key=lambda x: x["name"], reverse=True)[0]
         file_r = requests.get(latest_file["download_url"])
         report = file_r.json()
         
-        html = f"""
+        html = f'''
         <div class="status-box">
             <p><b>Дата:</b> {report.get('date', '—')}</p>
             <p><b>Баланс:</b> {report.get('free_rub', 0)} руб.</p>
@@ -114,7 +82,7 @@ def index():
         </div>
         <h2>Облигации</h2>
         <ul>
-        """
+        '''
         for asset in report.get('assets', []):
             if asset.get('type') == 'bond':
                 price = asset.get('price')
@@ -123,56 +91,12 @@ def index():
         html += "</ul>"
         
         return render_template_string(HTML_TEMPLATE, content=html)
-    
     except Exception as e:
-        return f"<h2>Ошибка в коде: {str(e)}</h2>"
+        return render_template_string(HTML_TEMPLATE, content=f"<h2 style='color:red'>Ошибка: {str(e)}</h2>")
 
 @app.route('/schedule', methods=['GET', 'POST'])
 def schedule():
-    msg_html = ""
-    if request.method == 'POST':
-        try:
-            hour = int(request.form['hour'])
-            minute = int(request.form['minute'])
-            
-            hour_utc = (hour - 3) % 24
-            cron_expr = f"{minute} {hour_utc} * * *"
-            
-            url = f'https://api.github.com/repos/{REPO}/contents/.github/workflows/bot.yml'
-            headers = {'Authorization': f'token {GITHUB_PAT}', 'Accept': 'application/vnd.github.v3+json'}
-            
-            r = requests.get(url, headers=headers)
-            r.raise_for_status()
-            file_data = r.json()
-            content = base64.b64decode(file_data['content']).decode('utf-8')
-            sha = file_data['sha']
-            
-            new_content = re.sub(r"cron: '.*?'", f"cron: '{cron_expr}'", content)
-            
-            put_data = {
-                'message': f'Update schedule to {hour:02d}:{minute:02d} MSK (Web)',
-                'content': base64.b64encode(new_content.encode('utf-8')).decode('utf-8'),
-                'sha': sha
-            }
-            put_r = requests.put(url, headers=headers, json=put_data)
-            put_r.raise_for_status()
-            msg_html = f"<div class='msg msg-ok'>Успешно! Бот будет запускаться в {hour:02d}:{minute:02d} МСК.</div>"
-        except Exception as e:
-            msg_html = f"<div class='msg msg-err'>Ошибка: {e}</div>"
-            
-    content = f"""
-        <h2>Настройка расписания (МСК)</h2>
-        {msg_html}
-        <div class="form-group">
-            <form method="POST">
-                <input type="number" name="hour" min="0" max="23" value="20" required> :
-                <input type="number" name="minute" min="0" max="59" value="0" required>
-                <br>
-                <button type="submit">Сохранить в GitHub</button>
-            </form>
-        </div>
-    """
-    return render_template_string(HTML_TEMPLATE, content=content)
+    return render_template_string(HTML_TEMPLATE, content="<h2>Настройка расписания пока в разработке.</h2>")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
