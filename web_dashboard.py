@@ -17,7 +17,6 @@ def load_settings():
             return json.load(f)
     return {}
 
-SETTINGS = load_settings()
 
 if not GITHUB_PAT:
     print('!!! ОШИБКА: GITHUB_PAT не найден в переменных окружения !!!')
