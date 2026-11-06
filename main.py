@@ -132,12 +132,17 @@ def process_account(token, token_name):
         generate_report_file(token_name, "UNKNOWN", 0.0, f"Ошибка: {e}", [])
 
 
+from generate_html import generate_html_report
+
 def main():
     token_1 = os.environ.get("TINKOFF_TOKEN")
     token_2 = os.environ.get("TINKOFF_TOKEN_2")
     process_account(token_1, "Портфель 1")
     if token_2:
         process_account(token_2, "Портфель 2")
+
+    # Генерируем статический HTML после обработки всех портфелей
+    generate_html_report()
 
 
 if __name__ == "__main__":

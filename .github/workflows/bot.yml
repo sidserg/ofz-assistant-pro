@@ -33,6 +33,9 @@ jobs:
           SSL_TBANK_VERIFY: "True"
         run: python main.py
 
+      - name: Generate HTML Report
+        run: python generate_html.py
+
       - name: Archive old reports
         run: python archive_reports.py
 
