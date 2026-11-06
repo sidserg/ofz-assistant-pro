@@ -2,7 +2,7 @@ name: OFZ Assistant Bot
 
 on:
   schedule:
-    - cron: '0 16 * * *'  # 20:00 MSK
+    - cron: '0 17 * * *'  # 20:00 MSK
   workflow_dispatch:      # Возможность запустить вручную
 
 permissions:
