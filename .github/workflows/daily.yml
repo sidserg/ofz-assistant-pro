@@ -1,0 +1,33 @@
+name: Daily OFZ Assistant Pro
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 19 * * *'
+jobs:
+  run-assistant:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run assistant
+        env:
+          TINKOFF_TOKEN: ${{ secrets.TINKOFF_TOKEN }}
+          TINKOFF_TOKEN_2: ${{ secrets.TINKOFF_TOKEN_2 }}
+        run: python main.py
+      - name: Commit and Push Reports
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add reports/
+          git commit -m "Update reports" || echo "No changes to commit"
+          git push

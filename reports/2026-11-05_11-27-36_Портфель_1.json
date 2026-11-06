@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-05 11:27:36",
+  "portfolio": "Портфель 1",
+  "account_id": "2100569546",
+  "free_rub": 29.28,
+  "status": "Баланс меньше порога (600).",
+  "action": "Нет покупок",
+  "assets": [
+    {
+      "ticker": "SU26247RMFS5",
+      "type": "bond",
+      "quantity": 389.0,
+      "price": 851.0300000000001,
+      "name": "ОФЗ 26247"
+    },
+    {
+      "ticker": "SU26246RMFS7",
+      "type": "bond",
+      "quantity": 498.0,
+      "price": 819.97,
+      "name": "ОФЗ 26246"
+    },
+    {
+      "ticker": "SU26254RMFS1",
+      "type": "bond",
+      "quantity": 1560.0,
+      "price": 836.13,
+      "name": "ОФЗ 26254"
+    },
+    {
+      "ticker": "TECH2",
+      "type": "etf",
+      "quantity": 11.46571,
+      "price": 0.0,
+      "name": "Тинькофф Технологии заблокированные активы"
+    },
+    {
+      "ticker": "SU26238RMFS4",
+      "type": "bond",
+      "quantity": 952.0,
+      "price": 547.61,
+      "name": "ОФЗ 26238"
+    },
+    {
+      "ticker": "USD800UTSTOM",
+      "type": "currency",
+      "quantity": 0.27,
+      "price": 81.67,
+      "name": "Валюта"
+    },
+    {
+      "ticker": "RUB000UTSTOM",
+      "type": "currency",
+      "quantity": 29.28,
+      "price": 1.0,
+      "name": "Валюта"
+    },
+    {
+      "ticker": "TECH",
+      "type": "etf",
+      "quantity": 5.4,
+      "price": 8.58,
+      "name": "Технологии Америки"
+    },
+    {
+      "ticker": "TGLD@",
+      "type": "etf",
+      "quantity": 1.0,
+      "price": 13.26,
+      "name": "Золото"
+    }
+  ]
+}
