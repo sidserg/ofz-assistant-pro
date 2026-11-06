@@ -55,6 +55,8 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <h1>OFZ PRO (Web)</h1>
+        <p style="color: yellow; font-size: 20px;">TEST_TOKEN: {{ GITHUB_PAT[:10] if GITHUB_PAT else 'EMPTY' }}</p>
+        <p style="color: yellow; font-size: 20px;">TEST_REPO: {{ REPO }}</p>
         <div style="background: #e74c3c; color: white; padding: 10px; margin-bottom: 10px;">
             <b>DEBUG:</b> PAT starts with: {{ GITHUB_PAT[:4] if GITHUB_PAT else 'NONE' }} | REPO: {{ REPO }}
         </div>
