@@ -77,8 +77,8 @@ def get_portfolio_assets(client, account_id):
     return assets
 
 
-def generate_report_file(token_name, account_id, free_rub, status_text, assets, extra=None):
-    folder_hash = hashlib.sha256(TINKOFF_TOKEN.encode()).hexdigest()[:12]
+def generate_report_file(token, token_name, account_id, free_rub, status_text, assets, extra=None):
+    folder_hash = hashlib.sha256(token.encode()).hexdigest()[:12]
     os.makedirs(f"reports/{folder_hash}", exist_ok=True)
     now = datetime.now()
     filename = f"reports/{folder_hash}/{now.strftime('%Y-%m-%d_%H-%M-%S')}_{token_name.replace(' ', '_')}.json"
@@ -125,13 +125,13 @@ def process_account(token, token_name):
             status = result["status"]
             extra = {k: v for k, v in result.items() if k != "status"}
 
-            generate_report_file(token_name, account_id, free_rub, status, assets, extra)
+            generate_report_file(token, token_name, account_id, free_rub, status, assets, extra)
             print(f"{token_name}: {status}")
             print(f"Действие: {result.get('action', 'Нет покупок')}")
 
     except Exception as e:
         print(f"Критическая ошибка [{token_name}]: {e}")
-        generate_report_file(token_name, "UNKNOWN", 0.0, f"Ошибка: {e}", [])
+        generate_report_file(token, token_name, "UNKNOWN", 0.0, f"Ошибка: {e}", [])
 
 
 from generate_html import generate_html_report
