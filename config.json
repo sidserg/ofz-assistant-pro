@@ -1,6 +1,6 @@
 {
   "create_portfolio": false,
-  "min_threshold_rub": 700,
+  "min_threshold_rub": 600,
   "portfolio_creation_budget": 6000,
   "schedule": "00 20 * * *"
 }
