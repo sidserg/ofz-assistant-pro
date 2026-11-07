@@ -1,6 +1,8 @@
 name: OFZ Assistant Bot
 
 on:
+  push:
+    branches: [ main ]
   schedule:
     - cron: '0 18 * * *'  # 20:00 MSK
   workflow_dispatch:      # Возможность запустить вручную
