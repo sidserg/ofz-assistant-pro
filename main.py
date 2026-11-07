@@ -1,4 +1,5 @@
 import os
+import hashlib
 import json
 from datetime import datetime
 from decimal import Decimal
@@ -77,9 +78,10 @@ def get_portfolio_assets(client, account_id):
 
 
 def generate_report_file(token_name, account_id, free_rub, status_text, assets, extra=None):
-    os.makedirs("reports", exist_ok=True)
+    folder_hash = hashlib.sha256(TINKOFF_TOKEN.encode()).hexdigest()[:12]
+    os.makedirs(f"reports/{folder_hash}", exist_ok=True)
     now = datetime.now()
-    filename = f"reports/{now.strftime('%Y-%m-%d_%H-%M-%S')}_{token_name.replace(' ', '_')}.json"
+    filename = f"reports/{folder_hash}/{now.strftime('%Y-%m-%d_%H-%M-%S')}_{token_name.replace(' ', '_')}.json"
 
     report_data = {
         "date": now.strftime("%Y-%m-%d %H:%M:%S"),
